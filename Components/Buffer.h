@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -46,8 +46,8 @@ inline      void            uPutString(const char *t);
                             template <typename T>
             void            Put(const T &val)
                             {
-                                if (sizeof(T) > GetAvailSize())
-                                    if (resize(m_write_off + sizeof(T)) == -1) // space exhausted
+                                if(sizeof(T) > GetAvailSize())
+                                    if(resize(m_write_off + sizeof(T)) == -1) // space exhausted
                                     {
                                         m_last_err = 1;
                                         return;
@@ -58,7 +58,7 @@ inline      void            uPutString(const char *t);
                             template <typename T>
             void            Get(T &val)
                             {
-                                if (GetReadableDataSize() < sizeof(T))
+                                if(GetReadableDataSize() < sizeof(T))
                                 {
                                     m_last_err = 1;
                                     return;

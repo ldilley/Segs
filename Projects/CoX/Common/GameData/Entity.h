@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -20,9 +20,9 @@
 #include "Common/GameData/seq_definitions.h"
 #include "Common/GameData/CoHMath.h"
 #include "Common/GameData/Contact.h"
+#include "Common/GameData/Store.h"
 
 #include <glm/gtc/constants.hpp>
-
 #include <QQueue>
 #include <array>
 #include <memory>
@@ -32,7 +32,6 @@ class Team;
 class Trade;
 class Character;
 struct PlayerData;
-class GameDataStore;
 using Parse_AllKeyProfiles = std::vector<struct Keybind_Profiles>;
 
 enum class FadeDirection
@@ -210,6 +209,7 @@ public:
         bool                m_in_training           = false;
         bool                m_has_input_on_timeframe= false;
         bool                m_is_using_mapmenu      = false;
+        bool                m_map_swap_collided     = false;
 
         int                 u1 = 0; // used for live-debugging
 
@@ -236,6 +236,10 @@ public:
         bool                player_type                 = false;
         bool                m_destroyed                 = false;
         bool                m_is_fading                 = true;
+        bool                m_is_store                  = false;
+        vStoreItems         m_store_items;
+
+        std::function<void(int)>  m_active_dialog       = NULL;
 
         void                dump();
 
@@ -245,19 +249,5 @@ static  void                sendPvP(BitStream &bs);
         const QString &     name() const;
         void                fillFromCharacter(const GameDataStore &data);
         void                beginLogout(uint16_t time_till_logout=10); // Default logout time is 10 s
+        void                setActiveDialogCallback(std::function<void(int)> callback);
 };
-
-enum class DbStoreFlags : uint32_t
-{
-    PlayerData = 1,
-    Full       = ~0U,
-};
-
-void markEntityForDbStore(Entity *e,DbStoreFlags f);
-void unmarkEntityForDbStore(Entity *e, DbStoreFlags f);
-void initializeNewPlayerEntity(Entity &e);
-void initializeNewNpcEntity(const GameDataStore &data, Entity &e, const Parse_NPC *src, int idx, int variant);
-void fillEntityFromNewCharData(Entity &e, BitStream &src, const GameDataStore &data);
-extern void abortLogout(Entity *e);
-void revivePlayer(Entity &e, ReviveLevel lvl);
-void setStateMode(Entity &e, ClientStates state);

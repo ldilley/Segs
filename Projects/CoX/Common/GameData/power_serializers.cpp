@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -234,9 +234,9 @@ bool loadFrom(BinStore *s, AllPowerCategories &target)
 
 //template <class Archive> void load_minimal(Archive const &, log_level_t & obj, std::string const & value)
 //{
-//    if (value == "message") obj = log_level_t::message;
-//    else if (value == "warning") obj = log_level_t::warning;
-//    else if (value == "error") obj = log_level_t::error;
+//    if(value == "message") obj = log_level_t::message;
+//    else if(value == "warning") obj = log_level_t::warning;
+//    else if(value == "error") obj = log_level_t::error;
 //    else obj = log_level_t::message; // Default value
 //}
 template<class Archive>
@@ -282,18 +282,18 @@ static void serialize(Archive & archive, SeqBitNames & src)
 }
 namespace cereal
 {
-static std::string save_minimal(cereal::JSONOutputArchive & archive, const SeqBitNames & src)
+static std::string save_minimal(cereal::JSONOutputArchive & /*archive*/, const SeqBitNames & src)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums::SeqBitNames>();
     QString val = metaEnum.valueToKey(std::underlying_type<SeqBitNames>::type(src));
     return val.toStdString();
 }
-static void load_minimal(const cereal::JSONInputArchive & archive, SeqBitNames & val,const std::string &src)
+static void load_minimal(const cereal::JSONInputArchive & /*archive*/, SeqBitNames & val,const std::string &src)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums::SeqBitNames>();
     val  = SeqBitNames(metaEnum.keyToValue(src.c_str()));
 }
-static std::string save_minimal(cereal::JSONOutputArchive & archive, const AttackType & src)
+static std::string save_minimal(cereal::JSONOutputArchive & /*archive*/, const AttackType & src)
 {
     QMetaEnum metaEnum = QMetaEnum::fromType<SEGS_Enums_Power::AttackType>();
     QString val = metaEnum.valueToKey(std::underlying_type<AttackType>::type(src));

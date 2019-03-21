@@ -4,10 +4,55 @@ PROJECT(SEGS)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# for version and revision info. Derived from https://github.com/dolphin-emu/dolphin/blob/master/CMakeLists.txt#L132
+find_package(Git)
+if(GIT_FOUND)
+  # defines SEGS_REVISION
+  execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+      OUTPUT_VARIABLE SEGS_REVISION
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+  # defines SEGS_DESCRIPTION
+  execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} describe --always --long --dirty
+      OUTPUT_VARIABLE SEGS_DESCRIPTION
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  # remove hash (and trailing "-0" if needed) from description
+  string(REGEX REPLACE "(-0)?-[^-]+((-dirty)?)$" "\\2" SEGS_DESCRIPTION "${SEGS_DESCRIPTION}")
+
+  # defines SEGS_BRANCH
+  execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
+      OUTPUT_VARIABLE SEGS_BRANCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+
+# version number
+set(SEGS_VERSION_MAJOR "0")
+set(SEGS_VERSION_MINOR "6")
+set(SEGS_VERSION_PATCH "1")
+
+# If SEGS is not built from a Git repository, default the version info to
+# reasonable values.
+if(NOT SEGS_REVISION)
+  set(SEGS_DESCRIPTION "${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}.${SEGS_VERSION_PATCH}")
+  set(SEGS_REVISION "${SEGS_DESCRIPTION} (no further info)")
+  set(SEGS_BRANCH "develop")
+endif()
+
+add_definitions(
+    "-DSEGS_VERSION=\"${SEGS_VERSION_MAJOR}.${SEGS_VERSION_MINOR}.${SEGS_VERSION_PATCH}\""
+    "-DSEGS_BRANCH=\"${SEGS_BRANCH}\""
+    "-DSEGS_DESCRIPTION=\"${SEGS_DESCRIPTION}\""
+    )
+
 IF(MSVC)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -DNOMINMAX -D_USE_MATH_DEFINES)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 ELSEIF ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14")
+   
+   if(MINGW)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
+   endif()
 ELSEIF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra -Wuseless-cast -std=c++14 -Wno-nested-anon-types -Wno-gnu-anonymous-struct -Wno-gnu-zero-variadic-macro-arguments")
 endif()
@@ -28,9 +73,10 @@ SET(CMAKE_INCLUDE_PATH ${MAIN_INCLUDE_PATH})
 SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMakeScripts;${CMAKE_MODULE_PATH})
 SET(UNICODE TRUE)
 set(INSTALLED_TARGETS)
-OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" OFF)
+OPTION(ENABLE_SCRIPTING_ENGINE "Build experimental scripting engine ?" ON)
 OPTION(ENABLE_TESTS "Enable testing unit and functional tests" OFF)
 OPTION(BUILD_COX_MAP_VIEWER "Build CoX map file viewer ?" OFF)
+OPTION(BUILD_RPC_TEST_CLIENT "Build RPC Test Client ?" OFF)
 
 ########################################################################################
 # Prerequisites
@@ -154,3 +200,4 @@ set(MAPNAMES
 foreach(MAPDIR ${MAPNAMES})
   file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DefaultMapInstances/${MAPDIR})
 endforeach(MAPDIR)
+file(MAKE_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/logs)

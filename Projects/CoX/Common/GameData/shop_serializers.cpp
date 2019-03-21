@@ -1,7 +1,7 @@
 /*
  * SEGS - Super Entity Game Server
  * http://www.segs.io/
- * Copyright (c) 2006 - 2018 SEGS Team (see AUTHORS.md)
+ * Copyright (c) 2006 - 2019 SEGS Team (see AUTHORS.md)
  * This software is licensed under the terms of the 3-clause BSD License. See LICENSE.md for details.
  */
 
@@ -13,9 +13,9 @@
 #include "shop_serializers.h"
 #include "serialization_common.h"
 #include "serialization_types.h"
-
 #include "Common/GameData/shop_definitions.h"
 #include "DataStorage.h"
+
 
 namespace
 {
@@ -40,11 +40,11 @@ namespace
         return s->end_encountered();
     }
 
-    bool loadFrom(BinStore *s,ShopDeptName_Data *target)
+    bool loadFrom(BinStore *s,ShopDeptName_Data &target)
     {
         bool ok = true;
         s->prepare();
-        ok &= s->read(target->m_Names);
+        ok &= s->read(target.m_Names);
         ok &= s->prepare_nested(); // will update the file size left
         assert(ok);
         return s->end_encountered();
@@ -83,29 +83,29 @@ namespace
         return ok;
     }
 
-    bool loadFrom(BinStore *s,ItemPower_Data *target)
+    bool loadFrom(BinStore *s,ItemPower_Data &target)
     {
         bool ok = true;
         s->prepare();
-        ok &= s->read(target->m_PowerCategory);
-        ok &= s->read(target->m_PowerSet);
-        ok &= s->read(target->m_Power);
-        ok &= s->read(target->m_Level);
-        ok &= s->read(target->m_Remove);
+        ok &= s->read(target.m_PowerCategory);
+        ok &= s->read(target.m_PowerSet);
+        ok &= s->read(target.m_Power);
+        ok &= s->read(target.m_Level);
+        ok &= s->read(target.m_Remove);
         ok &= s->prepare_nested(); // will update the file size left
         assert(ok);
         return s->end_encountered();
     }
 
-    bool loadFrom(BinStore *s,ShopItemInfo_Data *target)
+    bool loadFrom(BinStore *s,ShopItemInfo_Data &target)
     {
         bool ok = true;
         s->prepare();
-        ok &= s->read(target->m_Name);
-        ok &= s->read(target->m_Sell);
-        ok &= s->read(target->m_Buy);
-        ok &= s->read(target->m_CountPerStore);
-        ok &= s->read(target->m_Departments);
+        ok &= s->read(target.m_Name);
+        ok &= s->read(target.m_Sell);
+        ok &= s->read(target.m_Buy);
+        ok &= s->read(target.m_CountPerStore);
+        ok &= s->read(target.m_Departments);
         ok &= s->prepare_nested(); // will update the file size left
         assert(ok);
         if(s->end_encountered())
@@ -116,7 +116,7 @@ namespace
         {
             s->nest_in();
             if("Power"==_name) {
-                ok &= loadFrom(s,&target->m_Power);
+                ok &= loadFrom(s,target.m_Power);
             } else
                 assert(!"unknown field referenced.");
             s->nest_out();
@@ -148,7 +148,7 @@ bool loadFrom(BinStore *s, AllShops_Data &target)
     return ok;
 }
 
-bool loadFrom(BinStore * s, AllShopItems_Data *target)
+bool loadFrom(BinStore *s, AllShopItems_Data &target)
 {
     bool ok = true;
     s->prepare();
@@ -162,8 +162,8 @@ bool loadFrom(BinStore * s, AllShopItems_Data *target)
         s->nest_in();
         if("Item"==_name) {
             ShopItemInfo_Data nt;
-            ok &= loadFrom(s,&nt);
-            target->emplace_back(nt);
+            ok &= loadFrom(s,nt);
+            target.emplace_back(nt);
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -171,7 +171,7 @@ bool loadFrom(BinStore * s, AllShopItems_Data *target)
     return ok;
 }
 
-bool loadFrom(BinStore * s, AllShopDepts_Data *target)
+bool loadFrom(BinStore * s, AllShopDepts_Data &target)
 {
     bool ok = true;
     s->prepare();
@@ -185,8 +185,8 @@ bool loadFrom(BinStore * s, AllShopDepts_Data *target)
         s->nest_in();
         if("Department"==_name) {
             ShopDeptName_Data nt;
-            ok &= loadFrom(s,&nt);
-            target->push_back(nt);
+            ok &= loadFrom(s,nt);
+            target.push_back(nt);
         } else
             assert(!"unknown field referenced.");
         s->nest_out();
@@ -242,7 +242,7 @@ static void serialize(Archive & archive, ShopItemInfo_Data & m)
     archive(cereal::make_nvp("Power",m.m_Power));
 }
 
-void saveTo(const AllShopItems_Data & target, const QString & baseName, bool text_format)
+void saveTo(const std::vector<struct ShopItemInfo_Data> & target, const QString & baseName, bool text_format)
 {
     commonSaveTo(target,"AllShopItems",baseName,text_format);
 }
